@@ -1,11 +1,423 @@
-@import 'tailwindcss';
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+body {
+    background: #ffffff;
+    color: #000;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+.header {
+    width: 100%;
+    height: 90px;
+    background: #ffc7ef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 45px;
+}
+
+.logo {
+    font-size: 42px;
+    font-weight: 800;
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.menu-icon {
+    font-size: 38px;
+    margin-right: 18px;
+}
+
+.main {
+    min-height: calc(100vh - 90px);
+    padding: 35px 60px;
+}
+
+.center {
+    text-align: center;
+}
+
+h1 {
+    font-size: 44px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 34px;
+    margin-bottom: 20px;
+}
+
+.form-box {
+    width: 60%;
+    margin: 20px auto;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px 25px;
+    margin-bottom: 15px;
+    border: 2px solid #555;
+    border-radius: 8px;
+    font-size: 20px;
+}
+
+textarea {
+    min-height: 220px;
+    resize: none;
+}
+
+.btn {
+    background: #ffc7ef;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 45px;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    color: #000;
+    display: inline-block;
+}
+
+.btn:hover {
+    background: #f5aee1;
+}
+
+.link-pink {
+    color: #ec2cc7;
+    font-size: 20px;
+    text-decoration: none;
+}
+
+.logo-daerah {
+    width: 300px;
+    margin: 70px auto;
+    display: block;
+}
+
+.login-choice {
+    width: 430px;
+    margin: 20px auto;
+}
+
+.login-choice .btn {
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.login-icon {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: #ffc7ef;
+    margin: 40px auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 90px;
+}
+
+.dashboard-title {
+    text-align: center;
+    background: #ffc7ef;
+    padding: 35px;
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.dashboard-content {
+    padding: 70px 120px;
+}
+
+.dashboard-content h1 {
+    font-size: 34px;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 90px;
+    margin: 70px 0;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: #ffc7ef;
+    padding: 28px 60px;
+    border-radius: 8px;
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.sidebar-layout {
+    display: flex;
+}
+
+.sidebar {
+    width: 310px;
+    min-height: calc(100vh - 90px);
+    background: #ffc7ef;
+}
+
+.profile-sidebar {
+    padding: 35px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.avatar {
+    width: 75px;
+    height: 75px;
+    background: #fff;
+    border-radius: 50%;
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.role {
+    background: #fff;
+    border-radius: 20px;
+    padding: 5px 35px;
+    font-weight: 700;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+.nav-title {
+    background: #f7a5df;
+    padding: 10px 20px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #6d3d5f;
+}
+
+.nav-menu a {
+    display: block;
+    padding: 22px 20px;
+    font-size: 23px;
+    font-weight: 800;
+    color: #000;
+    text-decoration: none;
+}
+
+.nav-menu a.active {
+    color: #c58bb7;
+}
+
+.content {
+    flex: 1;
+    padding: 45px;
+}
+
+.book-search {
+    width: 65%;
+    margin: 20px auto 35px;
+    background: #ffc7ef;
+    border-radius: 10px;
+}
+
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 35px 45px;
+    text-align: center;
+}
+
+.book-card img {
+    width: 140px;
+    height: 215px;
+    object-fit: cover;
+}
+
+.book-card h3 {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.add-book-btn {
+    float: right;
+    margin-top: 25px;
+}
+
+.book-form-layout {
+    display: grid;
+    grid-template-columns: 42% 58%;
+    gap: 45px;
+}
+
+.book-cover {
+    width: 390px;
+    height: 570px;
+    object-fit: cover;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.form-row label {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.profile-page {
+    padding: 25px;
+}
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: 35% 65%;
+    gap: 60px;
+    align-items: center;
+}
+
+.profile-photo {
+    width: 340px;
+    height: 370px;
+    object-fit: cover;
+}
+
+.profile-form label {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.profile-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 70px;
+}
+
+.history-page h1,
+.deleted-page h1,
+.archive-page h1 {
+    text-align: center;
+    font-size: 46px;
+}
+
+.history-card {
+    width: 45%;
+    margin: 45px auto;
+    text-align: center;
+}
+
+.history-card img {
+    width: 300px;
+}
+
+.history-card .btn {
+    width: 100%;
+    margin: 10px 0;
+    font-weight: 400;
+}
+
+.list-card {
+    background: #eee;
+    border-radius: 8px;
+    margin: 12px 0;
+    padding: 14px 40px;
+    display: grid;
+    grid-template-columns: 140px 1fr 300px;
+    align-items: center;
+    gap: 40px;
+}
+
+.list-card img {
+    width: 110px;
+    height: 160px;
+    object-fit: cover;
+}
+
+.list-card h3 {
+    font-size: 30px;
+}
+
+.modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal {
+    background: #ffc7ef;
+    padding: 35px 60px;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.modal h2 {
+    font-size: 32px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.modal .btn {
+    background: #fff;
+    padding: 8px 35px;
+}
+
+@media (max-width: 900px) {
+    .header {
+        padding: 0 20px;
+    }
+
+    .logo {
+        font-size: 30px;
+    }
+
+    .header-title {
+        font-size: 16px;
+    }
+
+    .form-box,
+    .book-search {
+        width: 90%;
+    }
+
+    .sidebar-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+    }
+
+    .book-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .book-form-layout,
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        gap: 20px;
+    }
 }
