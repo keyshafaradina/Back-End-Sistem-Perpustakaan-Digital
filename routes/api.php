@@ -2,13 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AnggotaController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LaporanPeminjamanController;
+use App\Http\Controllers\KunjunganController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,10 +18,12 @@ use App\Http\Controllers\LaporanPeminjamanController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/admin/login', [AdminController::class, 'login']);
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
+Route::put('/profile/admin/{id}', [AuthController::class, 'updateProfilAdmin']);
+Route::put('/profile/anggota/{id}', [AuthController::class, 'updateProfilAnggota']);
+
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 /*
 |--------------------------------------------------------------------------
 | DASHBOARD
@@ -58,6 +60,7 @@ Route::get('/buku', [BukuController::class, 'index']);
 Route::post('/buku', [BukuController::class, 'store']);
 Route::get('/buku/{id}', [BukuController::class, 'show']);
 Route::put('/buku/{id}', [BukuController::class, 'update']);
+Route::delete('/buku/{id}', [BukuController::class, 'destroy']);
 
 Route::put('/buku/{id}/arsipkan', [BukuController::class, 'arsipkan']);
 Route::get('/buku-arsip', [BukuController::class, 'diarsipkan']);
@@ -66,11 +69,10 @@ Route::put('/buku/{id}/buka-arsip', [BukuController::class, 'bukaArsip']);
 Route::put('/buku/{id}/hapuskan', [BukuController::class, 'hapuskan']);
 Route::get('/buku-dihapus', [BukuController::class, 'dihapus']);
 Route::put('/buku/{id}/pulihkan', [BukuController::class, 'pulihkan']);
-Route::delete('/buku/{id}', [BukuController::class, 'destroy']);
 
 /*
 |--------------------------------------------------------------------------
-| PEMINJAMAN
+| PEMINJAMAN & PENGEMBALIAN
 |--------------------------------------------------------------------------
 */
 
@@ -89,15 +91,17 @@ Route::post('/peminjaman/batal', [PeminjamanController::class, 'batal']);
 
 Route::get('/perpanjangan', [LaporanPeminjamanController::class, 'index']);
 Route::get('/perpanjangan/{id}', [LaporanPeminjamanController::class, 'formPerpanjangan']);
-
-// Anggota mengajukan perpanjangan
 Route::post('/perpanjangan/{id}/ajukan', [LaporanPeminjamanController::class, 'ajukanPerpanjangan']);
-
-// Admin menyetujui perpanjangan
 Route::put('/perpanjangan/{id}/setujui', [LaporanPeminjamanController::class, 'setujuiPerpanjangan']);
-
-// Admin menolak perpanjangan
 Route::put('/perpanjangan/{id}/tolak', [LaporanPeminjamanController::class, 'tolakPerpanjangan']);
+
+/*
+|--------------------------------------------------------------------------
+| KUNJUNGAN
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/kunjungan/simpan', [KunjunganController::class, 'simpan']);
 
 /*
 |--------------------------------------------------------------------------
@@ -105,4 +109,6 @@ Route::put('/perpanjangan/{id}/tolak', [LaporanPeminjamanController::class, 'tol
 |--------------------------------------------------------------------------
 */
 
-Route::get('/laporan/peminjaman', [LaporanController::class, 'index']);
+Route::get('/laporan/kunjungan', [LaporanController::class, 'laporanKunjungan']);
+Route::get('/laporan/peminjaman', [LaporanController::class, 'laporanPeminjaman']);
+Route::get('/laporan/pengembalian', [LaporanController::class, 'laporanPengembalian']);

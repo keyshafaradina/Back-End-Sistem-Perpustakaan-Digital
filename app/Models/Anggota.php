@@ -2,16 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class Anggota extends Authenticatable
+class Anggota extends Model
 {
-    use HasFactory;
-
-    protected $table = 'anggotas';
-
     protected $fillable = [
+        'user_id',
         'nomor_anggota',
         'nama_lengkap',
         'tanggal_lahir',
@@ -20,21 +16,5 @@ class Anggota extends Authenticatable
         'no_telepon',
         'username',
         'password',
-        'qr_code',
     ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected $casts = [
-        'tanggal_lahir' => 'date',
-    ];
-
-    // otomatis hash password
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = bcrypt($value);
-    }
 }

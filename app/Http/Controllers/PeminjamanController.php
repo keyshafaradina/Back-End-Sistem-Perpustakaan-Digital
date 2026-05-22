@@ -22,9 +22,7 @@ class PeminjamanController extends Controller
 
         return response()->json([
             'message' => 'Data peminjaman berhasil diambil',
-            'data' => $peminjaman->map(function ($item) {
-                return $this->formatPeminjaman($item);
-            })
+            'data' => $peminjaman
         ]);
     }
 
@@ -37,9 +35,7 @@ class PeminjamanController extends Controller
         $anggota = Anggota::where('nomor_anggota', $request->nomor_anggota)->first();
 
         if (!$anggota) {
-            return response()->json([
-                'message' => 'Anggota tidak ditemukan'
-            ], 404);
+            return response()->json(['message' => 'Anggota tidak ditemukan'], 404);
         }
 
         return response()->json([
@@ -56,14 +52,11 @@ class PeminjamanController extends Controller
 
         $buku = Buku::where('kode_buku', $request->kode_buku)
             ->where('status', 'aktif')
-            ->where('ketersediaan', 'tersedia')
             ->where('stok', '>', 0)
             ->first();
 
         if (!$buku) {
-            return response()->json([
-                'message' => 'Buku tidak ditemukan atau sedang tidak tersedia'
-            ], 404);
+            return response()->json(['message' => 'Buku tidak ditemukan atau stok habis'], 404);
         }
 
         return response()->json([
@@ -102,16 +95,12 @@ class PeminjamanController extends Controller
             foreach ($request->buku_ids as $buku_id) {
                 $buku = Buku::where('id', $buku_id)
                     ->where('status', 'aktif')
-                    ->where('ketersediaan', 'tersedia')
                     ->where('stok', '>', 0)
                     ->first();
 
                 if (!$buku) {
                     DB::rollBack();
-
-                    return response()->json([
-                        'message' => 'Salah satu buku tidak tersedia'
-                    ], 400);
+                    return response()->json(['message' => 'Salah satu buku tidak tersedia'], 400);
                 }
 
                 DetailPeminjaman::create([
@@ -129,15 +118,9 @@ class PeminjamanController extends Controller
 
             DB::commit();
 
-            $peminjaman->load([
-                'anggota',
-                'petugas',
-                'detailPeminjaman.buku'
-            ]);
-
             return response()->json([
                 'message' => 'Data peminjaman berhasil disimpan',
-                'data' => $this->formatPeminjaman($peminjaman)
+                'data' => $peminjaman
             ], 201);
 
         } catch (\Exception $e) {
@@ -150,81 +133,36 @@ class PeminjamanController extends Controller
         }
     }
 
-    public function kembalikan(Request $request, $id)
+    public function kembalikan(Request $request, int $id)
     {
         $request->validate([
             'tanggal_dikembalikan' => 'required|date',
         ]);
 
-        DB::beginTransaction();
+        $peminjaman = Peminjaman::with('detailPeminjaman.buku')->find($id);
 
-        try {
-            $peminjaman = Peminjaman::with([
-                'anggota',
-                'petugas',
-                'detailPeminjaman.buku'
-            ])->findOrFail($id);
-
-            if ($peminjaman->status === 'dikembalikan' || $peminjaman->status === 'terlambat') {
-                return response()->json([
-                    'message' => 'Buku sudah pernah dikembalikan'
-                ], 400);
-            }
-
-            foreach ($peminjaman->detailPeminjaman as $detail) {
-                $buku = $detail->buku;
-
-                if ($buku) {
-                    $stokBaru = $buku->stok + 1;
-
-                    $buku->update([
-                        'stok' => $stokBaru,
-                        'ketersediaan' => 'tersedia',
-                    ]);
-                }
-            }
-
-            $tanggalBatasKembali = Carbon::parse($peminjaman->tanggal_pengembalian)->startOfDay();
-            $tanggalDikembalikan = Carbon::parse($request->tanggal_dikembalikan)->startOfDay();
-
-            $terlambatHari = 0;
-            $status = 'dikembalikan';
-
-            if ($tanggalDikembalikan->gt($tanggalBatasKembali)) {
-                $terlambatHari = $tanggalBatasKembali->diffInDays($tanggalDikembalikan);
-                $status = 'terlambat';
-            }
-
-            $peminjaman->update([
-                'tanggal_dikembalikan' => $tanggalDikembalikan->format('Y-m-d'),
-                'status' => $status,
-            ]);
-
-            DB::commit();
-
-            $peminjaman->refresh();
-            $peminjaman->load([
-                'anggota',
-                'petugas',
-                'detailPeminjaman.buku'
-            ]);
-
-            return response()->json([
-                'message' => $status === 'terlambat'
-                    ? 'Buku berhasil dikembalikan, terlambat ' . $terlambatHari . ' hari'
-                    : 'Buku berhasil dikembalikan',
-                'terlambat_hari' => $terlambatHari,
-                'data' => $this->formatPeminjaman($peminjaman, $terlambatHari)
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'message' => 'Gagal mengembalikan buku',
-                'error' => $e->getMessage()
-            ], 500);
+        if (!$peminjaman) {
+            return response()->json(['message' => 'Data peminjaman tidak ditemukan'], 404);
         }
+
+        foreach ($peminjaman->detailPeminjaman as $detail) {
+            if ($detail->buku) {
+                $detail->buku->update([
+                    'stok' => $detail->buku->stok + 1,
+                    'ketersediaan' => 'tersedia',
+                ]);
+            }
+        }
+
+        $peminjaman->update([
+            'tanggal_dikembalikan' => $request->tanggal_dikembalikan,
+            'status' => 'dikembalikan',
+        ]);
+
+        return response()->json([
+            'message' => 'Buku berhasil dikembalikan',
+            'data' => $peminjaman
+        ]);
     }
 
     public function batal()
@@ -232,61 +170,5 @@ class PeminjamanController extends Controller
         return response()->json([
             'message' => 'Peminjaman dibatalkan'
         ]);
-    }
-
-    private function formatPeminjaman($peminjaman, $terlambatManual = null)
-    {
-        $hariIni = Carbon::now()->startOfDay();
-        $tanggalBatasKembali = Carbon::parse($peminjaman->tanggal_pengembalian)->startOfDay();
-
-        $terlambatHari = 0;
-        $keterangan = 'Belum terlambat';
-
-        if ($terlambatManual !== null) {
-            $terlambatHari = $terlambatManual;
-            $keterangan = $terlambatHari > 0
-                ? 'Buku terlambat ' . $terlambatHari . ' hari'
-                : 'Belum terlambat';
-        } elseif (
-            $peminjaman->tanggal_dikembalikan === null &&
-            $peminjaman->status === 'dipinjam' &&
-            $hariIni->gt($tanggalBatasKembali)
-        ) {
-            $terlambatHari = $tanggalBatasKembali->diffInDays($hariIni);
-            $keterangan = 'Buku terlambat ' . $terlambatHari . ' hari';
-        }
-
-        return [
-            'id_peminjaman' => $peminjaman->id,
-
-            'anggota' => $peminjaman->anggota ? [
-                'id' => $peminjaman->anggota->id,
-                'nomor_anggota' => $peminjaman->anggota->nomor_anggota,
-                'nama_lengkap' => $peminjaman->anggota->nama_lengkap,
-            ] : null,
-
-            'petugas' => $peminjaman->petugas ? [
-                'id' => $peminjaman->petugas->id,
-                'nama_lengkap' => $peminjaman->petugas->nama_lengkap,
-            ] : null,
-
-            'buku' => $peminjaman->detailPeminjaman->map(function ($detail) {
-                return $detail->buku ? [
-                    'id' => $detail->buku->id,
-                    'kode_buku' => $detail->buku->kode_buku,
-                    'judul' => $detail->buku->judul,
-                ] : null;
-            })->filter()->values(),
-
-            'tanggal_peminjaman' => $peminjaman->tanggal_peminjaman,
-            'tanggal_pengembalian' => $peminjaman->tanggal_pengembalian,
-            'tanggal_dikembalikan' => $peminjaman->tanggal_dikembalikan,
-            'tanggal_perpanjangan' => $peminjaman->tanggal_perpanjangan,
-
-            'status' => $peminjaman->status,
-            'status_perpanjangan' => $peminjaman->status_perpanjangan,
-            'terlambat_hari' => $terlambatHari,
-            'keterangan_keterlambatan' => $keterangan,
-        ];
     }
 }
