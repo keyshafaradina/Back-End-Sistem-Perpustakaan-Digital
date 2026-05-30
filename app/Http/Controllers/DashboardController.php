@@ -164,42 +164,69 @@ class DashboardController extends Controller
     {
         $dashboard = DashboardSetting::first();
 
+        if (!$dashboard) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Data dashboard kosong',
+                'data' => null
+            ]);
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Data dashboard berhasil diambil',
-            'data' => $dashboard
+            'data' => [
+                'id' => $dashboard->id,
+                'nama_instansi' => $dashboard->judul,
+                'visi' => $dashboard->visi,
+                'misi' => $dashboard->misi,
+                'alamat' => $dashboard->alamat,
+                'sosial_media' => $dashboard->akun_sosmed,
+                'logo' => $dashboard->logo,
+                'created_at' => $dashboard->created_at,
+                'updated_at' => $dashboard->updated_at,
+            ]
         ]);
     }
 
     public function updateDashboard(Request $request)
     {
         $request->validate([
-            'judul' => 'required|string',
+            'nama_instansi' => 'required|string',
             'visi' => 'required|string',
-            'misi' => 'required|array',
+            'misi' => 'required|string',
             'alamat' => 'required|string',
-            'akun_sosmed' => 'required|string',
-            'logo' => 'nullable|string'
+            'sosial_media' => 'required|string',
         ]);
 
-        $dashboard = DashboardSetting::firstOrNew();
+        $dashboard = DashboardSetting::first();
 
-        $dashboard->judul = $request->judul;
+        if (!$dashboard) {
+            $dashboard = new DashboardSetting();
+        }
+
+        $dashboard->judul = $request->nama_instansi;
         $dashboard->visi = $request->visi;
         $dashboard->misi = $request->misi;
         $dashboard->alamat = $request->alamat;
-        $dashboard->akun_sosmed = $request->akun_sosmed;
-
-        if ($request->logo) {
-            $dashboard->logo = $request->logo;
-        }
+        $dashboard->akun_sosmed = $request->sosial_media;
 
         $dashboard->save();
 
         return response()->json([
             'status' => true,
             'message' => 'Dashboard berhasil diupdate',
-            'data' => $dashboard
+            'data' => [
+                'id' => $dashboard->id,
+                'nama_instansi' => $dashboard->judul,
+                'visi' => $dashboard->visi,
+                'misi' => $dashboard->misi,
+                'alamat' => $dashboard->alamat,
+                'sosial_media' => $dashboard->akun_sosmed,
+                'logo' => $dashboard->logo,
+                'created_at' => $dashboard->created_at,
+                'updated_at' => $dashboard->updated_at,
+            ]
         ]);
     }
 }

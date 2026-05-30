@@ -19,25 +19,35 @@ use App\Http\Controllers\KunjunganController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
+Route::post('/profile/admin/{id}', [AuthController::class, 'updateProfilAdmin']);
 Route::put('/profile/admin/{id}', [AuthController::class, 'updateProfilAdmin']);
+
+Route::post('/profile/anggota/{id}', [AuthController::class, 'updateProfilAnggota']);
 Route::put('/profile/anggota/{id}', [AuthController::class, 'updateProfilAnggota']);
 
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 /*
 |--------------------------------------------------------------------------
-| DASHBOARD
+| DASHBOARD ADMIN STATISTIK
 |--------------------------------------------------------------------------
 */
 
 Route::get('/dashboard', [DashboardController::class, 'index']);
-Route::get('/dashboard/edit', [DashboardController::class, 'editDashboard']);
-Route::put('/dashboard/edit', [DashboardController::class, 'updateDashboard']);
-
 Route::get('/dashboard/buku-populer', [DashboardController::class, 'bukuPopuler']);
 Route::get('/dashboard/terlambat', [DashboardController::class, 'terlambat']);
 Route::get('/dashboard/perpanjangan', [DashboardController::class, 'permohonanPerpanjangan']);
 Route::get('/dashboard/jatuh-tempo', [DashboardController::class, 'jatuhTempo']);
+
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD SETTING UNTUK ANGGOTA
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/dashboard-setting', [DashboardController::class, 'editDashboard']);
+Route::post('/dashboard-setting', [DashboardController::class, 'updateDashboard']);
+Route::put('/dashboard-setting', [DashboardController::class, 'updateDashboard']);
 
 /*
 |--------------------------------------------------------------------------
@@ -56,19 +66,20 @@ Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy']);
 |--------------------------------------------------------------------------
 */
 
+Route::get('/buku-arsip', [BukuController::class, 'diarsipkan']);
+Route::get('/buku-dihapus', [BukuController::class, 'dihapus']);
+
 Route::get('/buku', [BukuController::class, 'index']);
 Route::post('/buku', [BukuController::class, 'store']);
+
+Route::put('/buku/{id}/arsipkan', [BukuController::class, 'arsipkan']);
+Route::put('/buku/{id}/buka-arsip', [BukuController::class, 'bukaArsip']);
+Route::put('/buku/{id}/hapuskan', [BukuController::class, 'hapuskan']);
+Route::put('/buku/{id}/pulihkan', [BukuController::class, 'pulihkan']);
+
 Route::get('/buku/{id}', [BukuController::class, 'show']);
 Route::put('/buku/{id}', [BukuController::class, 'update']);
 Route::delete('/buku/{id}', [BukuController::class, 'destroy']);
-
-Route::put('/buku/{id}/arsipkan', [BukuController::class, 'arsipkan']);
-Route::get('/buku-arsip', [BukuController::class, 'diarsipkan']);
-Route::put('/buku/{id}/buka-arsip', [BukuController::class, 'bukaArsip']);
-
-Route::put('/buku/{id}/hapuskan', [BukuController::class, 'hapuskan']);
-Route::get('/buku-dihapus', [BukuController::class, 'dihapus']);
-Route::put('/buku/{id}/pulihkan', [BukuController::class, 'pulihkan']);
 
 /*
 |--------------------------------------------------------------------------
@@ -112,3 +123,4 @@ Route::post('/kunjungan/simpan', [KunjunganController::class, 'simpan']);
 Route::get('/laporan/kunjungan', [LaporanController::class, 'laporanKunjungan']);
 Route::get('/laporan/peminjaman', [LaporanController::class, 'laporanPeminjaman']);
 Route::get('/laporan/pengembalian', [LaporanController::class, 'laporanPengembalian']);
+Route::post('/laporan/kunjungan/simpan', [LaporanController::class, 'simpanKunjungan']);

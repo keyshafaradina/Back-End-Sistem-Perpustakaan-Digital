@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Anggota extends Model
 {
+    protected $table = 'anggotas';
+
     protected $fillable = [
-        'user_id',
         'nomor_anggota',
         'nama_lengkap',
         'tanggal_lahir',
@@ -15,6 +16,13 @@ class Anggota extends Model
         'email',
         'no_telepon',
         'username',
+        'password',
+        'qr_code',
+        'foto',
+        'user_id',
+    ];
+
+    protected $hidden = [
         'password',
     ];
 }

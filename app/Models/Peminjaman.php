@@ -13,11 +13,11 @@ class Peminjaman extends Model
         'petugas_id',
         'tanggal_peminjaman',
         'tanggal_pengembalian',
-        'tanggal_pengembalian_baru',
         'tanggal_dikembalikan',
         'tanggal_perpanjangan',
-        'status',
+        'tanggal_pengembalian_baru',
         'status_perpanjangan',
+        'status',
     ];
 
     public function anggota()

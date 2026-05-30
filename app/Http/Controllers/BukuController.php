@@ -24,7 +24,16 @@ class BukuController extends Controller
             'judul' => 'required',
             'penulis' => 'required',
             'stok' => 'required|integer|min:0',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $namaGambar = null;
+
+        if ($request->hasFile('gambar')) {
+            $file = $request->file('gambar');
+            $namaGambar = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/buku'), $namaGambar);
+        }
 
         $buku = Buku::create([
             'kode_buku' => $request->kode_buku,
@@ -35,7 +44,7 @@ class BukuController extends Controller
             'tahun_terbit' => $request->tahun_terbit,
             'stok' => $request->stok,
             'nomor_rak' => $request->nomor_rak,
-            'gambar' => $request->gambar,
+            'gambar' => $namaGambar,
             'status' => 'aktif',
             'ketersediaan' => $request->stok > 0 ? 'tersedia' : 'tidak tersedia',
         ]);
@@ -46,7 +55,7 @@ class BukuController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         $buku = Buku::findOrFail($id);
 
@@ -56,7 +65,7 @@ class BukuController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $buku = Buku::findOrFail($id);
 
@@ -65,7 +74,16 @@ class BukuController extends Controller
             'judul' => 'required',
             'penulis' => 'required',
             'stok' => 'required|integer|min:0',
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $namaGambar = $buku->gambar;
+
+        if ($request->hasFile('gambar')) {
+            $file = $request->file('gambar');
+            $namaGambar = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/buku'), $namaGambar);
+        }
 
         $buku->update([
             'kode_buku' => $request->kode_buku,
@@ -76,7 +94,7 @@ class BukuController extends Controller
             'tahun_terbit' => $request->tahun_terbit,
             'stok' => $request->stok,
             'nomor_rak' => $request->nomor_rak,
-            'gambar' => $request->gambar,
+            'gambar' => $namaGambar,
             'ketersediaan' => $request->stok > 0 ? 'tersedia' : 'tidak tersedia',
         ]);
 
@@ -86,7 +104,7 @@ class BukuController extends Controller
         ]);
     }
 
-    public function arsipkan($id)
+    public function arsipkan(int $id)
     {
         $buku = Buku::findOrFail($id);
 
@@ -106,12 +124,12 @@ class BukuController extends Controller
         $buku = Buku::where('status', 'diarsipkan')->get();
 
         return response()->json([
-            'message' => 'Data buku diarsipkan',
+            'message' => 'Data buku diarsipkan berhasil diambil',
             'data' => $buku
         ]);
     }
 
-    public function bukaArsip($id)
+    public function bukaArsip(int $id)
     {
         $buku = Buku::findOrFail($id);
 
@@ -126,7 +144,7 @@ class BukuController extends Controller
         ]);
     }
 
-    public function hapuskan($id)
+    public function hapuskan(int $id)
     {
         $buku = Buku::findOrFail($id);
 
@@ -146,12 +164,12 @@ class BukuController extends Controller
         $buku = Buku::where('status', 'dihapus')->get();
 
         return response()->json([
-            'message' => 'Data buku dihapus',
+            'message' => 'Data buku dihapus berhasil diambil',
             'data' => $buku
         ]);
     }
 
-    public function pulihkan($id)
+    public function pulihkan(int $id)
     {
         $buku = Buku::findOrFail($id);
 
@@ -166,7 +184,7 @@ class BukuController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $buku = Buku::findOrFail($id);
         $buku->delete();

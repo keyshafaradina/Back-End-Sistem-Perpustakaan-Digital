@@ -35,7 +35,9 @@ class PeminjamanController extends Controller
         $anggota = Anggota::where('nomor_anggota', $request->nomor_anggota)->first();
 
         if (!$anggota) {
-            return response()->json(['message' => 'Anggota tidak ditemukan'], 404);
+            return response()->json([
+                'message' => 'Anggota tidak ditemukan'
+            ], 404);
         }
 
         return response()->json([
@@ -56,12 +58,30 @@ class PeminjamanController extends Controller
             ->first();
 
         if (!$buku) {
-            return response()->json(['message' => 'Buku tidak ditemukan atau stok habis'], 404);
+            return response()->json([
+                'message' => 'Buku tidak ditemukan atau stok habis'
+            ], 404);
         }
 
         return response()->json([
             'message' => 'Buku ditemukan',
-            'data' => $buku
+            'data' => [
+                'id' => $buku->id,
+                'kode_buku' => $buku->kode_buku,
+                'judul' => $buku->judul,
+                'sinopsis' => $buku->sinopsis,
+                'penulis' => $buku->penulis,
+                'penerbit' => $buku->penerbit,
+                'tahun_terbit' => $buku->tahun_terbit,
+                'stok' => $buku->stok,
+                'nomor_rak' => $buku->nomor_rak,
+                'gambar' => $buku->gambar,
+                'gambar_url' => $buku->gambar
+                    ? asset('uploads/buku/' . $buku->gambar)
+                    : null,
+                'status' => $buku->status,
+                'ketersediaan' => $buku->ketersediaan,
+            ]
         ]);
     }
 
@@ -69,8 +89,9 @@ class PeminjamanController extends Controller
     {
         $request->validate([
             'anggota_id' => 'required|exists:anggotas,id',
-            'petugas_id' => 'nullable|exists:users,id',
+            'petugas_id' => 'required',
             'tanggal_peminjaman' => 'required|date',
+            'tanggal_pengembalian' => 'required|date',
             'buku_ids' => 'required|array|min:1',
             'buku_ids.*' => 'required|exists:bukus,id',
         ]);
@@ -78,18 +99,34 @@ class PeminjamanController extends Controller
         DB::beginTransaction();
 
         try {
-            $tanggalPeminjaman = Carbon::parse($request->tanggal_peminjaman)->startOfDay();
-            $tanggalPengembalian = $tanggalPeminjaman->copy()->addDays(7);
+            $jumlahBukuSedangDipinjam = DetailPeminjaman::whereHas('peminjaman', function ($query) use ($request) {
+                $query->where('anggota_id', $request->anggota_id)
+                      ->where('status', 'dipinjam');
+            })->count();
+
+            $jumlahBukuBaru = count($request->buku_ids);
+
+            if (($jumlahBukuSedangDipinjam + $jumlahBukuBaru) > 3) {
+                DB::rollBack();
+
+                return response()->json([
+                    'message' => 'Anggota sudah meminjam maksimal 3 buku. Kembalikan buku terlebih dahulu agar dapat meminjam lagi.'
+                ], 400);
+            }
+
+            $tanggalPeminjaman = Carbon::parse($request->tanggal_peminjaman)->format('Y-m-d');
+            $tanggalPengembalian = Carbon::parse($request->tanggal_pengembalian)->format('Y-m-d');
 
             $peminjaman = Peminjaman::create([
                 'anggota_id' => $request->anggota_id,
                 'petugas_id' => $request->petugas_id,
-                'tanggal_peminjaman' => $tanggalPeminjaman->format('Y-m-d'),
-                'tanggal_pengembalian' => $tanggalPengembalian->format('Y-m-d'),
+                'tanggal_peminjaman' => $tanggalPeminjaman,
+                'tanggal_pengembalian' => $tanggalPengembalian,
                 'tanggal_dikembalikan' => null,
                 'tanggal_perpanjangan' => null,
-                'status' => 'dipinjam',
+                'tanggal_pengembalian_baru' => null,
                 'status_perpanjangan' => 'belum',
+                'status' => 'dipinjam',
             ]);
 
             foreach ($request->buku_ids as $buku_id) {
@@ -100,7 +137,10 @@ class PeminjamanController extends Controller
 
                 if (!$buku) {
                     DB::rollBack();
-                    return response()->json(['message' => 'Salah satu buku tidak tersedia'], 400);
+
+                    return response()->json([
+                        'message' => 'Buku tidak tersedia'
+                    ], 400);
                 }
 
                 DetailPeminjaman::create([
@@ -119,8 +159,8 @@ class PeminjamanController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Data peminjaman berhasil disimpan',
-                'data' => $peminjaman
+                'message' => 'Buku berhasil dipinjam',
+                'data' => $peminjaman->load('anggota', 'detailPeminjaman.buku')
             ], 201);
 
         } catch (\Exception $e) {
@@ -142,7 +182,9 @@ class PeminjamanController extends Controller
         $peminjaman = Peminjaman::with('detailPeminjaman.buku')->find($id);
 
         if (!$peminjaman) {
-            return response()->json(['message' => 'Data peminjaman tidak ditemukan'], 404);
+            return response()->json([
+                'message' => 'Data peminjaman tidak ditemukan'
+            ], 404);
         }
 
         foreach ($peminjaman->detailPeminjaman as $detail) {
